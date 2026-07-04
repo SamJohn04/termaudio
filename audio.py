@@ -40,9 +40,9 @@ def play(config: dict) -> None:
     expects config dict to first be passed through init_audio;
     """
     options = {
-            'volume': DEFAULT_VOLUME,
-            'list_status': ListStatus.NO_CHANGE,
-            'next': False,
+        'volume': DEFAULT_VOLUME,
+        'list_status': ListStatus.NO_CHANGE,
+        'next': False,
     }
     to_delete = []
 
@@ -57,12 +57,13 @@ def play(config: dict) -> None:
                     config['io_queue'].put({"action": "music", "title": source.name})
                     audio = AudioSegment.from_file(source)
                     options = _play_song(
-                            config['pyaudio'],
-                            audio,
-                            options,
-                            config['stop_event'],
-                            config['command_queue'],
-                            config['io_queue'])
+                        config['pyaudio'],
+                        audio,
+                        options,
+                        config['stop_event'],
+                        config['command_queue'],
+                        config['io_queue'],
+                    )
                 except UnsupportedRawDataOnAudioSegmentException:
                     config['io_queue'].put(f"{source.name} has unsupported raw data")
                     to_delete.append(source)
@@ -146,12 +147,13 @@ def _find_music_files(path_str: str) -> list[Path]:
 
 
 def _play_song(
-        p: pyaudio.PyAudio,
-        seg: AudioSegment,
-        options: dict,
-        stop_event: threading.Event,
-        command_queue: queue.Queue,
-        io_queue: queue.Queue) -> dict:
+    p: pyaudio.PyAudio,
+    seg: AudioSegment,
+    options: dict,
+    stop_event: threading.Event,
+    command_queue: queue.Queue,
+    io_queue: queue.Queue,
+) -> dict:
     """
     plays the song that is passed in;
     if the raw_data of AudioSegment is not of type bytes, throws an error;
@@ -193,12 +195,14 @@ def _play_song(
             return (data, pyaudio.paComplete)
         return (data, pyaudio.paContinue)
 
-    stream = p.open(format=p.get_format_from_width(sample_width),
-                    channels=channels,
-                    rate=rate,
-                    frames_per_buffer=CHUNK_SIZE,
-                    output=True,
-                    stream_callback=callback)
+    stream = p.open(
+        format=p.get_format_from_width(sample_width),
+        channels=channels,
+        rate=rate,
+        frames_per_buffer=CHUNK_SIZE,
+        output=True,
+        stream_callback=callback,
+    )
 
     while not stop_event.is_set() and stream.is_active():
         try:
