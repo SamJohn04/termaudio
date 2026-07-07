@@ -1,5 +1,7 @@
 # termaudio: A Terminal Music Player
 
+![termaudio example](assets/screenshot.png)
+
 ## How To Use
 
 After installing termaudio, run it like so:
